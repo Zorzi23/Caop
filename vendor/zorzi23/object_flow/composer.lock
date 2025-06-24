@@ -1,0 +1,55 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "1355a749a2c8be9014023b9eec87ab15",
+    "packages": [
+        {
+            "name": "zorzi23/regex_flow",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Zorzi23/RegexFlow.git",
+                "reference": "95b9d4cbc2e6f59a9e5296138dd3e3de33d3dc70"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Zorzi23/RegexFlow/zipball/95b9d4cbc2e6f59a9e5296138dd3e3de33d3dc70",
+                "reference": "95b9d4cbc2e6f59a9e5296138dd3e3de33d3dc70",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "RegexFlow\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Gustavo Zorzi",
+                    "email": "gustavozorzi2003@gmail.com"
+                }
+            ],
+            "description": "A library for handling regular expressions in PHP.",
+            "support": {
+                "source": "https://github.com/Zorzi23/RegexFlow/tree/1.0.0",
+                "issues": "https://github.com/Zorzi23/RegexFlow/issues"
+            },
+            "time": "2025-01-26T21:36:34+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": true,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": [],
+    "plugin-api-version": "2.6.0"
+}

@@ -1,0 +1,28 @@
+{
+    "name": "zorzi23/object_flow",
+    "version": "1.0.0",
+    "type": "library",
+    "description": "A PHP library for managing object flows and interactions.",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "ObjectFlow\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Gustavo Zorzi",
+            "email": "gustavozorzi2003@gmail.com"
+        }
+    ],
+    "require": {
+        "zorzi23/regex_flow": "1.0.0"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/Zorzi23/RegexFlow"
+        }
+    ],
+    "prefer-stable": true
+}

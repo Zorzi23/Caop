@@ -1,0 +1,18 @@
+# telemetry_config.yml
+version: 1.0
+
+name: 'teste'
+instrumentation:
+  service_name: "your-service-name"  # Default service name
+  trace_exporter: "console"          # console, otlp, etc.
+  
+shortcuts:
+  request_span: true
+
+entities:
+  functions:
+    - name: "teste"
+    
+  methods:
+    - class: "LegacyClass"
+      method: "legacyMethod"

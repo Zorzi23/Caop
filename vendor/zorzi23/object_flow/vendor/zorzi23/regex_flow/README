@@ -1,0 +1,60 @@
+# PHP Regex Library
+
+## Overview
+
+This library provides a set of functions and utilities to work with regular expressions in PHP. It simplifies the process of pattern matching, searching, and replacing strings using regular expressions.
+
+## Features
+
+- **Pattern Matching**: Easily match patterns in strings using regular expressions.
+- **Search and Replace**: Search for patterns and replace them with specified strings.
+- **Validation**: Validate strings against predefined patterns.
+- **Customization**: Create custom patterns for specific use cases.
+- **Integration with ObjectFlow**: Seamlessly integrate with the ObjectFlow library for advanced object management.
+
+## Installation
+
+To install this library, use Composer:
+
+```bash
+composer require zorzi23/regex_flow
+```
+
+## Usage
+
+Here's a basic example of how to use the PHP Regex Library in your project:
+
+```php
+require 'vendor/autoload.php';
+
+use RegexFlow\YourClass;
+
+// Your code here
+```
+
+## Requirements
+
+- PHP 7.4 or higher
+- Composer
+
+## Contributing
+
+Contributions are welcome! Please fork the repository and submit a pull request.
+
+## License
+
+This library is open-source and licensed under the MIT License.
+
+## Author
+
+Gustavo Zorzi - [gustavozorzi2003@gmail.com](mailto:gustavozorzi2003@gmail.com)
+
+## Keywords
+
+- PHP
+- Regex
+- Regular Expressions
+- PHP Library
+- Composer
+- ObjectFlow
+- PSR-4

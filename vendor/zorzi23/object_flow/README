@@ -1,0 +1,59 @@
+# ObjectFlow Library
+
+## Overview
+
+ObjectFlow is a powerful PHP library designed for managing object flows and interactions. It provides a robust framework for handling complex object-oriented programming tasks with ease.
+
+## Features
+
+- **Easy Object Management**: Simplify the management of object flows in your PHP applications.
+- **Integration with RegexFlow**: Seamlessly integrate with the RegexFlow library for advanced regex operations.
+- **PSR-4 Autoloading**: Follows PSR-4 standards for autoloading classes.
+- **Stable and Reliable**: Developed with stability and reliability in mind.
+
+## Installation
+
+To install ObjectFlow, use Composer:
+
+```bash
+composer require zorzi23/object_flow
+```
+
+## Usage
+
+Here's a basic example of how to use ObjectFlow in your project:
+
+```php
+require 'vendor/autoload.php';
+
+use ObjectFlow\YourClass;
+
+// Your code here
+```
+
+## Requirements
+
+- PHP 7.4 or higher
+- Composer
+
+## Contributing
+
+Contributions are welcome! Please fork the repository and submit a pull request.
+
+## License
+
+This library is open-source and licensed under the MIT License.
+
+## Author
+
+Gustavo Zorzi - [gustavozorzi2003@gmail.com](mailto:gustavozorzi2003@gmail.com)
+
+## Keywords
+
+- PHP
+- Object Flow
+- Object Management
+- PHP Library
+- Composer
+- RegexFlow
+- PSR-4

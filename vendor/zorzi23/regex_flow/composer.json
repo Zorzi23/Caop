@@ -1,0 +1,21 @@
+{
+    "name": "zorzi23/regex_flow",
+    "type": "library",
+    "version": "1.0.0",
+    "license": "MIT",
+    "description": "A library for handling regular expressions in PHP.",
+    "autoload": {
+        "psr-4": {
+            "RegexFlow\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Gustavo Zorzi",
+            "email": "gustavozorzi2003@gmail.com"
+        }
+    ],
+    "require": {},
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
