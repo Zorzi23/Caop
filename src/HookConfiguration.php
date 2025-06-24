@@ -142,35 +142,39 @@ final class HookConfiguration
      * @param Throwable|null $oException Caught exception
      * @return mixed Original result
      */
-    public function handlePostHook(
-        mixed $xResult,
-        array $aParams,
-        ?ScopeInterface $oScope,
-        ?Throwable $oException
-    ): mixed {
-        if (!$oScope) {
-            return $xResult;
-        }
+    public function handlePostHook(){
+        $aArgs = func_get_args();
+        $oScope = Context::storage()->scope();
+        $oScope->detach();
+        $oSpan = Span::fromContext($oScope->context());
+        // if ($exception) {
+        //     $span->recordException($exception);
+        //     $span->setStatus(StatusCode::STATUS_ERROR);
+        // }
+        $oSpan->end();
+        // if (!$oScope) {
+        //     return $xResult;
+        // }
 
-        try {
-            $oSpan = Span::getCurrent();
+        // try {
+        //     $oSpan = Span::getCurrent();
 
-            if ($this->bCaptureReturn) {
-                $oSpan->setAttribute(
-                    "{$this->sSpanName}.return",
-                    $this->oArgumentSanitizer->sanitizeReturnValue($xResult)
-                );
-            }
+        //     if ($this->bCaptureReturn) {
+        //         $oSpan->setAttribute(
+        //             "{$this->sSpanName}.return",
+        //             $this->oArgumentSanitizer->sanitizeReturnValue($xResult)
+        //         );
+        //     }
 
-            if ($this->bCaptureErrors && $oException) {
-                $oSpan->recordException($oException);
-                $oSpan->setStatus(StatusCode::STATUS_ERROR, $oException->getMessage());
-            }
-        } finally {
-            $oSpan->end();
-            $oScope->detach();
-        }
+        //     if ($this->bCaptureErrors && $oException) {
+        //         $oSpan->recordException($oException);
+        //         $oSpan->setStatus(StatusCode::STATUS_ERROR, $oException->getMessage());
+        //     }
+        // } finally {
+        //     $oSpan->end();
+        //     $oScope->detach();
+        // }
 
-        return $xResult;
+        // return $xResult;
     }
 }

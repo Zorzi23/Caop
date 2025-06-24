@@ -3,16 +3,17 @@ version: 1.0
 
 name: 'teste'
 instrumentation:
-  service_name: "your-service-name"  # Default service name
-  trace_exporter: "console"          # console, otlp, etc.
-  
-shortcuts:
-  request_span: true
+  service_name: "my-service"
+  trace_exporter: "console"
 
 entities:
   functions:
+    - name: "handleRequest"  # Parent span for the request
     - name: "teste"
-    
+      parent: "handleRequest"  # Child of handleRequest
+    - name: "processData"
+      parent: "teste"         # Child of teste (nested hierarchy)
   methods:
     - class: "LegacyClass"
       method: "legacyMethod"
+      parent: "handleRequest"  # Child of handleRequest

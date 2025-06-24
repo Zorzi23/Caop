@@ -33,11 +33,20 @@ final class TelemetryConfigLoader
      *
      * @param string $sPath Path to the YAML configuration file
      * @return self
-     * @throws \Symfony\Component\Yaml\Exception\ParseException If YAML parsing fails
      */
     public static function createFromYaml(string $sPath): self
     {
-        return new self(Yaml::parseFile($sPath));
+        if (!file_exists($sPath)) {
+            error_log("TelemetryConfigLoader: Configuration file not found: {$sPath}");
+            return new self([]);
+        }
+
+        try {
+            return new self(Yaml::parseFile($sPath));
+        } catch (\Symfony\Component\Yaml\Exception\ParseException $oException) {
+            error_log("TelemetryConfigLoader: Failed to parse YAML configuration: {$oException->getMessage()}");
+            return new self([]);
+        }
     }
 
     /**
@@ -78,66 +87,47 @@ final class TelemetryConfigLoader
      */
     public function registerAllEntities(EntityTelemetry $oTelemetry): void
     {
-        $oBuilder = MonitoredEntityBuilder::newInstance();
+        $oBuilder = MonitoredEntityBuilder::create();
 
-        $this->registerFunctions($oTelemetry, $oBuilder);
-        $this->registerMethods($oTelemetry, $oBuilder);
-        $this->registerGroups($oTelemetry, $oBuilder);
-    }
-
-    /**
-     * Registers function entities from configuration
-     *
-     * @param EntityTelemetry $oTelemetry Telemetry system instance
-     * @param MonitoredEntityBuilder $oBuilder Entity builder
-     */
-    private function registerFunctions(EntityTelemetry $oTelemetry, MonitoredEntityBuilder $oBuilder): void
-    {
+        // Register functions
         foreach ($this->aConfig['entities']['functions'] ?? [] as $aFnConfig) {
+            if (!isset($aFnConfig['name'])) {
+                error_log("TelemetryConfigLoader: Skipping function with missing name");
+                continue;
+            }
             $oEntity = $oBuilder->forFunction($aFnConfig['name']);
-            $oTelemetry->registerMonitoredEntity($oEntity, $this->createHookConfig($aFnConfig));
+            $aHookConfig = $this->createHookConfig($aFnConfig);
+            $oTelemetry->registerMonitoredEntity($oEntity, $aHookConfig, $aFnConfig['parent'] ?? null);
         }
-    }
 
-    /**
-     * Registers method entities from configuration
-     *
-     * @param EntityTelemetry $oTelemetry Telemetry system instance
-     * @param MonitoredEntityBuilder $oBuilder Entity builder
-     */
-    private function registerMethods(EntityTelemetry $oTelemetry, MonitoredEntityBuilder $oBuilder): void
-    {
+        // Register methods
         foreach ($this->aConfig['entities']['methods'] ?? [] as $aMethodConfig) {
-            $oEntity = $oBuilder->forMethod(
-                $aMethodConfig['class'],
-                $aMethodConfig['method']
-            );
-            $oTelemetry->registerMonitoredEntity($oEntity, $this->createHookConfig($aMethodConfig));
+            if (!isset($aMethodConfig['class'], $aMethodConfig['method'])) {
+                error_log("TelemetryConfigLoader: Skipping method with missing class or method");
+                continue;
+            }
+            $oEntity = $oBuilder->forMethod($aMethodConfig['class'], $aMethodConfig['method']);
+            $aHookConfig = $this->createHookConfig($aMethodConfig);
+            $oTelemetry->registerMonitoredEntity($oEntity, $aHookConfig, $aMethodConfig['parent'] ?? null);
         }
-    }
 
-    /**
-     * Registers group entities from configuration
-     *
-     * @param EntityTelemetry $oTelemetry Telemetry system instance
-     * @param MonitoredEntityBuilder $oBuilder Entity builder
-     */
-    private function registerGroups(EntityTelemetry $oTelemetry, MonitoredEntityBuilder $oBuilder): void
-    {
+        // Register groups
         foreach ($this->aConfig['entities']['groups'] ?? [] as $sGroupName => $aGroupConfig) {
             $aCommonAttributes = $aGroupConfig['common_attributes'] ?? [];
 
             foreach ($aGroupConfig['items'] ?? [] as $aItem) {
-                if (isset($aItem['class'], $aItem['method'])) {
-                    $oEntity = $oBuilder->forMethod(
-                        $aItem['class'],
-                        $aItem['method'],
-                        $aItem['static'] ?? false
-                    );
-                    $aConfig = $this->createHookConfig($aItem);
-                    $aConfig['attributes'] = array_merge($aConfig['attributes'], $aCommonAttributes);
-                    $oTelemetry->registerMonitoredEntity($oEntity, $aConfig);
+                if (!isset($aItem['class'], $aItem['method'])) {
+                    error_log("TelemetryConfigLoader: Skipping group item with missing class or method in group {$sGroupName}");
+                    continue;
                 }
+                $oEntity = $oBuilder->forMethod(
+                    $aItem['class'],
+                    $aItem['method'],
+                    $aItem['static'] ?? false
+                );
+                $aConfig = $this->createHookConfig($aItem);
+                $aConfig['attributes'] = array_merge($aConfig['attributes'], $aCommonAttributes);
+                $oTelemetry->registerMonitoredEntity($oEntity, $aConfig, $aItem['parent'] ?? null);
             }
         }
     }

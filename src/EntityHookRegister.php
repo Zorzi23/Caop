@@ -63,8 +63,8 @@ final class EntityHookRegister
             pre: function () use ($oConfig): array {
                 return $oConfig->handlePreHook(func_get_args());
             },
-            post: function (mixed $xResult, array $aParams, $oScope, ?Throwable $oException) use ($oConfig): mixed {
-                return $oConfig->handlePostHook($xResult, $aParams, $oScope, $oException);
+            post: function () use ($oConfig): mixed {
+                return $oConfig->handlePostHook(func_get_args());
             }
         );
     }
