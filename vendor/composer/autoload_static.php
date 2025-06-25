@@ -28,6 +28,7 @@ class ComposerStaticInit1c7170bb10583c1008d453a543b36ab2
         '58ecdc6bc6b585138831611aa769a744' => __DIR__ . '/..' . '/open-telemetry/opentelemetry-auto-psr18/_register.php',
         'dfdb213a5229dd55e621055ca8fd74e1' => __DIR__ . '/..' . '/open-telemetry/opentelemetry-auto-slim/_register.php',
         'ec07570ca5a812141189b1fa81503674' => __DIR__ . '/..' . '/phpunit/phpunit/src/Framework/Assert/Functions.php',
+        '6a4e828dadca5f030d85f301f69efb72' => __DIR__ . '/../..' . '/src/Initializer.php',
     );
 
     public static $prefixLengthsPsr4 = array (

@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
-use CaOp\EntityTelemetry;
-use CaOp\TelemetryConfigLoader;
+
+namespace CaOp;
+
 use Symfony\Component\Yaml\Exception\ParseException;
-require_once(dirname(__DIR__).'/vendor/autoload.php');
 
 /**
  * Initializes the telemetry system with the specified YAML configuration
@@ -21,27 +21,21 @@ function initializeTelemetry(string $sConfigPath): bool
     try {
         $oLoader = TelemetryConfigLoader::createFromYaml($sConfigPath);
         $oConfig = $oLoader->toGenericObject();
-        $oTelemetry = EntityTelemetry::createWithDefaults($oConfig->getName());
+        $oTelemetry = EntityTelemetry::createWithDefaults(
+            $oConfig->getName(),
+            $oLoader->getInstrumentationConfig()
+        );
         $oLoader->registerAllEntities($oTelemetry);
         return true;
     } catch (ParseException $oException) {
         error_log("Telemetry initialization failed: Failed to parse YAML configuration: {$oException->getMessage()}");
         return false;
-    } catch (Exception $oException) {
+    } catch (\Exception $oException) {
         error_log("Telemetry initialization failed: {$oException->getMessage()}");
         return false;
     }
 }
 
-// Initialize telemetry with the configuration file
-$sConfigPath = __DIR__ . '/telemetry_config.yml';
+// Determine config path from environment variable or default to cwd/telemetry_config.yml
+$sConfigPath = $_ENV['TELEMETRY_CONFIG_PATH'] ?? getcwd() . '/telemetry_config.yml';
 initializeTelemetry($sConfigPath);
-
-// Test function for monitoring
-function teste(): void
-{
-    print_r('dadwad');
-}
-
-// Execute test function
-teste();

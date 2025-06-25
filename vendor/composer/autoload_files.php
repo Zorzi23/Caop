@@ -27,4 +27,5 @@ return array(
     '58ecdc6bc6b585138831611aa769a744' => $vendorDir . '/open-telemetry/opentelemetry-auto-psr18/_register.php',
     'dfdb213a5229dd55e621055ca8fd74e1' => $vendorDir . '/open-telemetry/opentelemetry-auto-slim/_register.php',
     'ec07570ca5a812141189b1fa81503674' => $vendorDir . '/phpunit/phpunit/src/Framework/Assert/Functions.php',
+    '6a4e828dadca5f030d85f301f69efb72' => $baseDir . '/src/Initializer.php',
 );

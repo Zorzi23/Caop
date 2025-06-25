@@ -6,8 +6,12 @@
         "psr-4": {
             "CustomAutoOpenTelemetry\\": "src/",
             "CaOp\\": "src/"
-        }
+        },
+        "files": [
+            "src/Initializer.php"
+        ]
     },
+    
     "autoload-dev": {
         "psr-4": {
             "CustomAutoOpenTelemetry\\Tests\\": "tests/",

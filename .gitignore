@@ -1,0 +1,20 @@
+# Ignore test suite and PHPUnit generated files
+/tests/
+/phpunit.xml
+/phpunit.xml.dist
+/.phpunit.result.cache
+
+# Ignore VSCode settings
+.vscode/
+
+# Composer vendor directory
+/vendor/
+
+# Ignore system-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore logs or temp files
+*.log
+*.cache
+*.tmp

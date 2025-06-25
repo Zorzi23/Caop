@@ -7,6 +7,7 @@ use CaOp\MonitoredEntity\MonitoredEntity;
 use ObjectFlow\Trait\InstanceTrait;
 use OpenTelemetry\API\Instrumentation\CachedInstrumentation;
 use OpenTelemetry\API\Trace\SpanInterface;
+use OpenTelemetry\Context\Context;
 
 /**
  * Manages telemetry instrumentation for PHP entities with consistent monitoring
@@ -18,40 +19,46 @@ final class EntityTelemetry
     private static ?CachedInstrumentation $oInstrumentation = null;
     private readonly MonitoredEntityRegistry $oMonitoredEntityRegistry;
     private readonly EntityHookRegister $oEntityHookRegister;
-    private readonly ArgumentSanitizer $oArgumentSanitizer;
-    /** @var array<string, SpanInterface> */
-    private array $aSpanRegistry = [];
+    private readonly AttributesCollector $oAttributesCollector;
+    /** @var array<string, Context> */
+    private array $aSpanContextRegistry = [];
 
     /**
      * Private constructor to enforce factory method usage
      *
      * @param MonitoredEntityRegistry $oMonitoredEntityRegistry Registry for monitored entities
      * @param EntityHookRegister $oEntityHookRegister Entity hook registrar
-     * @param ArgumentSanitizer $oArgumentSanitizer Argument sanitizer
+     * @param AttributesCollector $oAttributesCollector Attribute collector
      */
     private function __construct(
         MonitoredEntityRegistry $oMonitoredEntityRegistry,
         EntityHookRegister $oEntityHookRegister,
-        ArgumentSanitizer $oArgumentSanitizer
+        AttributesCollector $oAttributesCollector
     ) {
         $this->oMonitoredEntityRegistry = $oMonitoredEntityRegistry;
         $this->oEntityHookRegister = $oEntityHookRegister;
-        $this->oArgumentSanitizer = $oArgumentSanitizer;
+        $this->oAttributesCollector = $oAttributesCollector;
     }
 
     /**
      * Creates an instance with default dependencies and a custom instrumentation name
      *
-     * @param string $sInstrumentationName Name of the instrumentation (default: 'app_instrumentation')
+     * @param string $sInstrumentationName Name of the instrumentation
+     * @param array<string, mixed> $aInstrumentationConfig Instrumentation configuration
      * @return self
      */
-    public static function createWithDefaults(string $sInstrumentationName = 'app_instrumentation'): self
-    {
-        self::$oInstrumentation = new CachedInstrumentation($sInstrumentationName);
+    public static function createWithDefaults(
+        string $sInstrumentationName = 'app_instrumentation',
+        array $aInstrumentationConfig = []
+    ): self {
+        self::$oInstrumentation = new CachedInstrumentation(
+            $sInstrumentationName,
+            $aInstrumentationConfig['trace_exporter'] ?? 'console'
+        );
         return new self(
             new MonitoredEntityRegistry(),
-            new EntityHookRegister(),
-            new ArgumentSanitizer()
+            EntityHookRegister::create(),
+            new AttributesCollector()
         );
     }
 
@@ -60,12 +67,19 @@ final class EntityTelemetry
      *
      * @param MonitoredEntity $oEntity Entity to monitor
      * @param array<string, mixed> $aOptions Configuration options
-     * @param string|null $sParentIdentifier Parent entity identifier (optional)
+     * @param string|null $sParentIdentifier Parent entity identifier
      * @return self
      */
-    public function registerMonitoredEntity(MonitoredEntity $oEntity, array $aOptions = [], ?string $sParentIdentifier = null): self
-    {
+    public function registerMonitoredEntity(
+        MonitoredEntity $oEntity,
+        array $aOptions = [],
+        ?string $sParentIdentifier = null
+    ): self {
         $sIdentifier = $oEntity->getFullIdentifier();
+        if ($sParentIdentifier && !$this->oMonitoredEntityRegistry->has($sParentIdentifier)) {
+            error_log("EntityTelemetry: Parent entity {$sParentIdentifier} not found for {$sIdentifier}");
+            $sParentIdentifier = null;
+        }
         $this->oMonitoredEntityRegistry->add($oEntity);
         $this->oEntityHookRegister->register(
             $oEntity,
@@ -73,8 +87,9 @@ final class EntityTelemetry
                 $aOptions,
                 $sIdentifier,
                 self::$oInstrumentation,
-                $this->oArgumentSanitizer,
-                $sParentIdentifier
+                $this->oAttributesCollector,
+                $sParentIdentifier,
+                $this
             )
         );
         return $this;
@@ -102,24 +117,24 @@ final class EntityTelemetry
     }
 
     /**
-     * Stores a span for an entity identifier
+     * Stores a span's context for an entity identifier
      *
      * @param string $sIdentifier Entity identifier
      * @param SpanInterface $oSpan Span to store
      */
     public function storeSpan(string $sIdentifier, SpanInterface $oSpan): void
     {
-        $this->aSpanRegistry[$sIdentifier] = $oSpan;
+        $this->aSpanContextRegistry[$sIdentifier] = $oSpan->storeInContext(Context::getCurrent());
     }
 
     /**
-     * Retrieves a span for an entity identifier
+     * Retrieves a span's context for an entity identifier
      *
      * @param string $sIdentifier Entity identifier
-     * @return SpanInterface|null The stored span or null if not found
+     * @return Context|null The stored span context or null if not found
      */
-    public function getSpan(string $sIdentifier): ?SpanInterface
+    public function getSpanContext(string $sIdentifier): ?Context
     {
-        return $this->aSpanRegistry[$sIdentifier] ?? null;
+        return $this->aSpanContextRegistry[$sIdentifier] ?? null;
     }
 }

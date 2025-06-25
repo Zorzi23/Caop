@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
+
 namespace CaOp;
+
 use CaOp\MonitoredEntity\MonitoredEntity;
 use CaOp\MonitoredEntity\MonitoredEntityType;
 use CaOp\MonitoredEntity\MonitoredFunction;
@@ -12,6 +14,15 @@ use Throwable;
  */
 final class EntityHookRegister
 {
+    /**
+     * Creates a new instance of EntityHookRegister
+     *
+     * @return self
+     */
+    public static function create(): self
+    {
+        return new self();
+    }
 
     /**
      * Registers a monitored entity with its telemetry hook configuration
@@ -26,6 +37,8 @@ final class EntityHookRegister
 
         if ($fnRegister) {
             call_user_func($fnRegister, $oEntity, $oConfig);
+        } else {
+            error_log("EntityHookRegister: No registration method found for entity type {$oEntity->getType()->getValue()}");
         }
     }
 
@@ -40,11 +53,13 @@ final class EntityHookRegister
         \OpenTelemetry\Instrumentation\hook(
             class: $oMethod->getClassName(),
             function: $oMethod->getName(),
-            pre: function () use ($oConfig): array {
-                return $oConfig->handlePreHook(func_get_args());
+            pre: function ($xObject, $aParams) use ($oConfig): array {
+                $oConfig->handlePreHook(func_get_args());
+                unset($xObject);
+                return $aParams;
             },
-            post: function (mixed $xResult, array $aParams, $oScope, ?Throwable $oException) use ($oConfig): mixed {
-                return $oConfig->handlePostHook($xResult, $aParams, $oScope, $oException);
+            post: function ($xObject, array $aParams, $xResult, ?Throwable $oException) use ($oConfig): mixed {
+                return $oConfig->handlePostHook($xObject, $aParams, $xResult, $oException);
             }
         );
     }
@@ -60,11 +75,13 @@ final class EntityHookRegister
         \OpenTelemetry\Instrumentation\hook(
             class: null,
             function: $oFunction->getName(),
-            pre: function () use ($oConfig): array {
-                return $oConfig->handlePreHook(func_get_args());
+            pre: function ($xObject, $aParams) use ($oConfig): array {
+                $oConfig->handlePreHook(func_get_args());
+                unset($xObject);
+                return $aParams;
             },
-            post: function () use ($oConfig): mixed {
-                return $oConfig->handlePostHook(func_get_args());
+            post: function ($xObject, array $aParams, $xResult, ?Throwable $oException) use ($oConfig): mixed {
+                return $oConfig->handlePostHook($xObject, $aParams, $xResult, $oException);
             }
         );
     }

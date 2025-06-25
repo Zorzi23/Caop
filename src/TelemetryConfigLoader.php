@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace CaOp;
@@ -6,10 +7,11 @@ namespace CaOp;
 use ObjectFlow\GenericObject;
 use ObjectFlow\Trait\InstanceTrait;
 use Symfony\Component\Yaml\Yaml;
+use Symfony\Component\Yaml\Exception\ParseException;
 use CaOp\MonitoredEntity\MonitoredEntityBuilder;
 
 /**
- * Loads and manages telemetry configuration from YAML files
+ * Loads and manages telemetry configuration from YAML files.
  */
 final class TelemetryConfigLoader
 {
@@ -19,9 +21,7 @@ final class TelemetryConfigLoader
     private array $aConfig;
 
     /**
-     * Private constructor to enforce factory method usage
-     *
-     * @param array<string, mixed> $aConfig Telemetry configuration
+     * @param array<string, mixed> $aConfig
      */
     private function __construct(array $aConfig)
     {
@@ -29,30 +29,31 @@ final class TelemetryConfigLoader
     }
 
     /**
-     * Creates an instance from a YAML configuration file
+     * Loads configuration from a YAML file.
      *
-     * @param string $sPath Path to the YAML configuration file
+     * @param string $sPath Path to the YAML file
      * @return self
      */
     public static function createFromYaml(string $sPath): self
     {
         if (!file_exists($sPath)) {
-            error_log("TelemetryConfigLoader: Configuration file not found: {$sPath}");
+            error_log("TelemetryConfigLoader: File not found: {$sPath}");
             return new self([]);
         }
 
         try {
-            return new self(Yaml::parseFile($sPath));
-        } catch (\Symfony\Component\Yaml\Exception\ParseException $oException) {
-            error_log("TelemetryConfigLoader: Failed to parse YAML configuration: {$oException->getMessage()}");
+            $aParsed = Yaml::parseFile($sPath);
+            return new self($aParsed);
+        } catch (ParseException $oException) {
+            error_log("TelemetryConfigLoader: YAML parse error: {$oException->getMessage()}");
             return new self([]);
         }
     }
 
     /**
-     * Creates an instance from an array configuration
+     * Loads configuration from an array.
      *
-     * @param array<string, mixed> $aConfig Configuration array
+     * @param array<string, mixed> $aConfig
      * @return self
      */
     public static function createFromArray(array $aConfig): self
@@ -61,9 +62,9 @@ final class TelemetryConfigLoader
     }
 
     /**
-     * Retrieves the loaded configuration
+     * Returns the raw config array.
      *
-     * @return array<string, mixed> Configuration array
+     * @return array<string, mixed>
      */
     public function getConfig(): array
     {
@@ -71,9 +72,9 @@ final class TelemetryConfigLoader
     }
 
     /**
-     * Converts configuration to a GenericObject
+     * Converts the config to a GenericObject wrapper.
      *
-     * @return GenericObject Configuration as a generic object
+     * @return GenericObject
      */
     public function toGenericObject(): GenericObject
     {
@@ -81,62 +82,64 @@ final class TelemetryConfigLoader
     }
 
     /**
-     * Registers all configured entities with the telemetry system
+     * Registers all entities in the config into the telemetry system.
      *
-     * @param EntityTelemetry $oTelemetry Telemetry system instance
+     * @param EntityTelemetry $oTelemetry
      */
     public function registerAllEntities(EntityTelemetry $oTelemetry): void
     {
         $oBuilder = MonitoredEntityBuilder::create();
+        $aFunctions = $this->aConfig['entities']['functions'] ?? [];
+        $this->registerEntities($oTelemetry, $oBuilder, $aFunctions, null);
+    }
 
-        // Register functions
-        foreach ($this->aConfig['entities']['functions'] ?? [] as $aFnConfig) {
-            if (!isset($aFnConfig['name'])) {
-                error_log("TelemetryConfigLoader: Skipping function with missing name");
+    /**
+     * Recursively registers all entities and children.
+     *
+     * @param EntityTelemetry $oTelemetry
+     * @param MonitoredEntityBuilder $oBuilder
+     * @param array<int, array<string, mixed>> $aEntities
+     * @param string|null $sParentIdentifier
+     */
+    private function registerEntities(
+        EntityTelemetry $oTelemetry,
+        MonitoredEntityBuilder $oBuilder,
+        array $aEntities,
+        ?string $sParentIdentifier
+    ): void {
+        foreach ($aEntities as $aEntityConfig) {
+            $sIdentifier = null;
+
+            if (empty($aEntityConfig['name'])) {
+                error_log('TelemetryConfigLoader: Skipping entity with missing name');
                 continue;
             }
-            $oEntity = $oBuilder->forFunction($aFnConfig['name']);
-            $aHookConfig = $this->createHookConfig($aFnConfig);
-            $oTelemetry->registerMonitoredEntity($oEntity, $aHookConfig, $aFnConfig['parent'] ?? null);
-        }
 
-        // Register methods
-        foreach ($this->aConfig['entities']['methods'] ?? [] as $aMethodConfig) {
-            if (!isset($aMethodConfig['class'], $aMethodConfig['method'])) {
-                error_log("TelemetryConfigLoader: Skipping method with missing class or method");
+            if (empty($aEntityConfig['class'])) {
+                $oEntity = $oBuilder->forFunction($aEntityConfig['name']);
+            } elseif (!empty($aEntityConfig['method'])) {
+                $oEntity = $oBuilder->forMethod($aEntityConfig['class'], $aEntityConfig['method']);
+            } else {
+                error_log("TelemetryConfigLoader: Missing method name for class {$aEntityConfig['class']}");
                 continue;
             }
-            $oEntity = $oBuilder->forMethod($aMethodConfig['class'], $aMethodConfig['method']);
-            $aHookConfig = $this->createHookConfig($aMethodConfig);
-            $oTelemetry->registerMonitoredEntity($oEntity, $aHookConfig, $aMethodConfig['parent'] ?? null);
-        }
 
-        // Register groups
-        foreach ($this->aConfig['entities']['groups'] ?? [] as $sGroupName => $aGroupConfig) {
-            $aCommonAttributes = $aGroupConfig['common_attributes'] ?? [];
+            $sIdentifier = $oEntity->getFullIdentifier();
+            $aHookConfig = $this->createHookConfig($aEntityConfig);
 
-            foreach ($aGroupConfig['items'] ?? [] as $aItem) {
-                if (!isset($aItem['class'], $aItem['method'])) {
-                    error_log("TelemetryConfigLoader: Skipping group item with missing class or method in group {$sGroupName}");
-                    continue;
-                }
-                $oEntity = $oBuilder->forMethod(
-                    $aItem['class'],
-                    $aItem['method'],
-                    $aItem['static'] ?? false
-                );
-                $aConfig = $this->createHookConfig($aItem);
-                $aConfig['attributes'] = array_merge($aConfig['attributes'], $aCommonAttributes);
-                $oTelemetry->registerMonitoredEntity($oEntity, $aConfig, $aItem['parent'] ?? null);
+            $oTelemetry->registerMonitoredEntity($oEntity, $aHookConfig, $sParentIdentifier);
+
+            if (!empty($aEntityConfig['children']) && is_array($aEntityConfig['children'])) {
+                $this->registerEntities($oTelemetry, $oBuilder, $aEntityConfig['children'], $sIdentifier);
             }
         }
     }
 
     /**
-     * Creates hook configuration from provided config array
+     * Extracts the hook configuration from an entity config array.
      *
-     * @param array<string, mixed> $aConfig Configuration data
-     * @return array<string, mixed> Hook configuration
+     * @param array<string, mixed> $aConfig
+     * @return array<string, mixed>
      */
     private function createHookConfig(array $aConfig): array
     {
@@ -149,9 +152,9 @@ final class TelemetryConfigLoader
     }
 
     /**
-     * Retrieves instrumentation configuration
+     * Returns instrumentation-specific configuration.
      *
-     * @return array<string, mixed> Instrumentation configuration
+     * @return array<string, mixed>
      */
     public function getInstrumentationConfig(): array
     {

@@ -2,8 +2,12 @@
 declare(strict_types=1);
 namespace CaOp;
 
+use NestedAttributesCollector;
+use OpenTelemetry\SDK\Common\Attribute\Attributes;
+
 /**
  * Sanitizes function arguments and return values for telemetry using print_r
+ * @deprecated message
  */
 final class ArgumentSanitizer
 {
@@ -14,7 +18,7 @@ final class ArgumentSanitizer
      * @param array<mixed> $aArgs Arguments to sanitize
      * @return string Sanitized representation of arguments
      */
-    public function sanitizeArguments(array $aArgs): string
+    public function sanitizeArguments(array $aArgs): mixed
     {
         return print_r($aArgs, true);
     }
@@ -25,8 +29,9 @@ final class ArgumentSanitizer
      * @param mixed $xValue Value to sanitize
      * @return string Sanitized representation of the return value
      */
-    public function sanitizeReturnValue(mixed $xValue): string
+    public function sanitizeReturnValue(mixed $xValue): mixed
     {
-        return print_r($xValue, true);
+        return $xValue;
+        // return print_r($xValue, true);
     }
 }

@@ -27,7 +27,9 @@ final class HookConfiguration
     private readonly bool $bCaptureReturn;
     private readonly bool $bCaptureErrors;
     private readonly CachedInstrumentation $oInstrumentation;
-    private readonly ArgumentSanitizer $oArgumentSanitizer;
+    private readonly AttributesCollector $oAttributesCollector;
+    private readonly ?string $sParentIdentifier;
+    private readonly EntityTelemetry $oTelemetry;
     private static ?Span $oRequestSpan = null;
 
     /**
@@ -39,7 +41,9 @@ final class HookConfiguration
      * @param bool $bCaptureReturn Whether to capture return values
      * @param bool $bCaptureErrors Whether to capture errors
      * @param CachedInstrumentation $oInstrumentation Instrumentation instance
-     * @param ArgumentSanitizer $oArgumentSanitizer Argument sanitizer
+     * @param AttributesCollector $oAttributesCollector Attribute collector
+     * @param string|null $sParentIdentifier Parent entity identifier
+     * @param EntityTelemetry $oTelemetry Telemetry instance for span registry
      */
     private function __construct(
         string $sSpanName,
@@ -48,7 +52,9 @@ final class HookConfiguration
         bool $bCaptureReturn,
         bool $bCaptureErrors,
         CachedInstrumentation $oInstrumentation,
-        ArgumentSanitizer $oArgumentSanitizer
+        AttributesCollector $oAttributesCollector,
+        ?string $sParentIdentifier,
+        EntityTelemetry $oTelemetry
     ) {
         $this->sSpanName = $sSpanName;
         $this->iSpanKind = $iSpanKind;
@@ -56,7 +62,9 @@ final class HookConfiguration
         $this->bCaptureReturn = $bCaptureReturn;
         $this->bCaptureErrors = $bCaptureErrors;
         $this->oInstrumentation = $oInstrumentation;
-        $this->oArgumentSanitizer = $oArgumentSanitizer;
+        $this->oAttributesCollector = $oAttributesCollector;
+        $this->sParentIdentifier = $sParentIdentifier;
+        $this->oTelemetry = $oTelemetry;
     }
 
     /**
@@ -64,13 +72,15 @@ final class HookConfiguration
      *
      * @param string $sFunctionName Function name for the span
      * @param CachedInstrumentation $oInstrumentation Instrumentation instance
-     * @param ArgumentSanitizer $oArgumentSanitizer Argument sanitizer
+     * @param AttributesCollector $oAttributesCollector Attribute collector
+     * @param EntityTelemetry $oTelemetry Telemetry instance
      * @return self
      */
     public static function createWithDefaults(
         string $sFunctionName,
         CachedInstrumentation $oInstrumentation,
-        ArgumentSanitizer $oArgumentSanitizer
+        AttributesCollector $oAttributesCollector,
+        EntityTelemetry $oTelemetry
     ): self {
         return new self(
             $sFunctionName,
@@ -79,7 +89,9 @@ final class HookConfiguration
             false,
             true,
             $oInstrumentation,
-            $oArgumentSanitizer
+            $oAttributesCollector,
+            null,
+            $oTelemetry
         );
     }
 
@@ -89,92 +101,102 @@ final class HookConfiguration
      * @param array<string, mixed> $aOptions Configuration options
      * @param string $sFunctionName Fallback function name for the span
      * @param CachedInstrumentation $oInstrumentation Instrumentation instance
-     * @param ArgumentSanitizer $oArgumentSanitizer Argument sanitizer
+     * @param AttributesCollector $oAttributesCollector Attribute collector
+     * @param string|null $sParentIdentifier Parent entity identifier
+     * @param EntityTelemetry $oTelemetry Telemetry instance
      * @return self
      */
     public static function createFromOptions(
         array $aOptions,
         string $sFunctionName,
         CachedInstrumentation $oInstrumentation,
-        ArgumentSanitizer $oArgumentSanitizer
+        AttributesCollector $oAttributesCollector,
+        ?string $sParentIdentifier,
+        EntityTelemetry $oTelemetry
     ): self {
         return new self(
             $aOptions['span_name'] ?? $sFunctionName ?: self::DEFAULT_SPAN_NAME,
             $aOptions['span_kind'] ?? SpanKind::KIND_INTERNAL,
             $aOptions['capture_args'] ?? true,
-            $aOptions['capture_return'] ?? false,
+            $aOptions['capture_return'] ?? true,
             $aOptions['capture_errors'] ?? true,
             $oInstrumentation,
-            $oArgumentSanitizer
+            $oAttributesCollector,
+            $sParentIdentifier,
+            $oTelemetry
         );
     }
 
     /**
      * Handles pre-execution hook for tracing
      *
-     * @param array<mixed> $aArgs Arguments to trace
-     * @return array<mixed> Original arguments
+     * @param array<mixed> $aArgs Arguments to trace ([$xObject, $aParams] or direct params)
+     * @return array<mixed> Original parameters
      */
     public function handlePreHook(array $aArgs): array
     {
         $oSpanBuilder = $this->oInstrumentation->tracer()
             ->spanBuilder($this->sSpanName)
             ->setSpanKind($this->iSpanKind);
-        $oSpan = $oSpanBuilder->startSpan();
-        
-        if ($this->bCaptureArgs) {
-            $oSpan->setAttribute(
-                "{$this->sSpanName}.args",
-                $this->oArgumentSanitizer->sanitizeArguments($aArgs)
-            );
+
+        // Set parent span context if specified
+        if ($this->sParentIdentifier) {
+            $oParentContext = $this->oTelemetry->getSpanContext($this->sParentIdentifier);
+            if ($oParentContext) {
+                $oSpanBuilder->setParent($oParentContext);
+            } else {
+                error_log("HookConfiguration: Parent context {$this->sParentIdentifier} not found for {$this->sSpanName}");
+            }
         }
-        
+
+        $oSpan = $oSpanBuilder->startSpan();
+        $this->oTelemetry->storeSpan($this->sSpanName, $oSpan);
+
+        if ($this->bCaptureArgs) {
+            // Handle [$xObject, $aParams] from EntityHookRegister or direct params
+            $aEntityArgs = count($aArgs) === 2 && is_array($aArgs[1]) ? $aArgs[1] : array_values($aArgs)[0] ?? [];
+            $this->oAttributesCollector->addFromMixed($oSpan, "{$this->sSpanName}.args", $aEntityArgs);
+        }
+
         Context::storage()->attach($oSpan->storeInContext(Context::getCurrent()));
-        return $aArgs;
+        return count($aArgs) === 2 && is_array($aArgs[1]) ? $aArgs[1] : $aArgs;
     }
 
     /**
      * Handles post-execution hook for tracing
      *
-     * @param mixed $xResult Execution result
+     * @param mixed $xObject Object instance (if method)
      * @param array<mixed> $aParams Parameters
-     * @param ScopeInterface|null $oScope Tracing scope
+     * @param mixed $xResult Execution result
      * @param Throwable|null $oException Caught exception
      * @return mixed Original result
      */
-    public function handlePostHook(){
-        $aArgs = func_get_args();
+    public function handlePostHook(
+        mixed $xObject,
+        array $aParams,
+        mixed $xResult,
+        ?Throwable $oException
+    ): mixed {
         $oScope = Context::storage()->scope();
-        $oScope->detach();
-        $oSpan = Span::fromContext($oScope->context());
-        // if ($exception) {
-        //     $span->recordException($exception);
-        //     $span->setStatus(StatusCode::STATUS_ERROR);
-        // }
-        $oSpan->end();
-        // if (!$oScope) {
-        //     return $xResult;
-        // }
+        if (!$oScope) {
+            error_log("HookConfiguration: Unknown scope on post hook for {$this->sSpanName}");
+            return $xResult;
+        }
 
-        // try {
-        //     $oSpan = Span::getCurrent();
+        try {
+            $oSpan = Span::fromContext($oScope->context());
+            if ($this->bCaptureReturn) {
+                $this->oAttributesCollector->addFromMixed($oSpan, "{$this->sSpanName}.return", $xResult);
+            }
+            if ($this->bCaptureErrors && $oException !== null) {
+                $oSpan->recordException($oException);
+                $oSpan->setStatus(StatusCode::STATUS_ERROR, $oException->getMessage());
+            }
+        } finally {
+            $oSpan->end();
+            $oScope->detach();
+        }
 
-        //     if ($this->bCaptureReturn) {
-        //         $oSpan->setAttribute(
-        //             "{$this->sSpanName}.return",
-        //             $this->oArgumentSanitizer->sanitizeReturnValue($xResult)
-        //         );
-        //     }
-
-        //     if ($this->bCaptureErrors && $oException) {
-        //         $oSpan->recordException($oException);
-        //         $oSpan->setStatus(StatusCode::STATUS_ERROR, $oException->getMessage());
-        //     }
-        // } finally {
-        //     $oSpan->end();
-        //     $oScope->detach();
-        // }
-
-        // return $xResult;
+        return $xResult;
     }
 }
