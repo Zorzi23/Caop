@@ -1,8 +1,8 @@
 # Ignore test suite and PHPUnit generated files
 /tests/
-/phpunit.xml
-/phpunit.xml.dist
-/.phpunit.result.cache
+.phpunit.xml
+.phpunit.xml.dist
+.phpunit.result.cache
 
 # Ignore VSCode settings
 .vscode/
