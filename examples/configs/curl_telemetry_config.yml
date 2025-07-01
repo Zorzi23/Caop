@@ -1,0 +1,220 @@
+# curl_telemetry_config.yml
+version: 1.0
+name: 'Caop\Curl'
+service_name: 'curl-service'
+entities:
+  # Initialization/Cleanup
+  - name: curl_init
+    desc: 'Initializes a new cURL session'
+    span_attributes:
+      net.transport: 'ip_tcp'
+      net.protocol: 'http'
+      net.protocol.version: '1.1'
+      http.client: 'curl'
+      http.operation: 'init'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: curl_close
+    desc: 'Closes a cURL session'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'close'
+    sensitive_params: []
+    sensitive_return: false
+
+  # Configuration
+  - name: curl_setopt
+    desc: 'Sets an option for a cURL transfer'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'set_option'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: curl_setopt_array
+    desc: 'Sets multiple options for a cURL transfer'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'set_options'
+    sensitive_params: []
+    sensitive_return: false
+
+  # Execution
+  - name: curl_exec
+    desc: 'Performs a cURL session'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'execute'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: curl_multi_init
+    desc: 'Initializes a new cURL multi handle'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'multi_init'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: curl_multi_add_handle
+    desc: 'Adds a normal cURL handle to a multi handle'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'multi_add'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: curl_multi_remove_handle
+    desc: 'Removes a multi handle from a set of cURL handles'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'multi_remove'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: curl_multi_exec
+    desc: 'Runs the sub-connections of the current cURL handle'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'multi_exec'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: curl_multi_close
+    desc: 'Closes a set of cURL handles'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'multi_close'
+    sensitive_params: []
+    sensitive_return: false
+
+  # Information
+  - name: curl_getinfo
+    desc: 'Gets information regarding a specific transfer'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'get_info'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: curl_version
+    desc: 'Gets cURL version information'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'version'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: curl_errno
+    desc: 'Returns the last error number'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'error_number'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: curl_error
+    desc: 'Returns a string containing the last error for the current session'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'error_message'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: curl_reset
+    desc: 'Resets all options of a libcurl session handle'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'reset'
+    sensitive_params: []
+    sensitive_return: false
+
+  # Advanced
+  - name: curl_escape
+    desc: 'URL-encodes the given string'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'escape'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: curl_unescape
+    desc: 'Decodes the given URL-encoded string'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'unescape'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: curl_pause
+    desc: 'Pauses and unpauses a connection'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'pause'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: curl_multi_select
+    desc: 'Waits for activity on any curl_multi connection'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'multi_select'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: curl_multi_getcontent
+    desc: 'Returns the content of a cURL handle if CURLOPT_RETURNTRANSFER is set'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'multi_get_content'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: curl_multi_info_read
+    desc: 'Gets information about the current transfers'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'multi_info_read'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: curl_multi_strerror
+    desc: 'Returns string describing error code'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'multi_strerror'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: curl_strerror
+    desc: 'Returns string describing the given error code'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'strerror'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: curl_share_init
+    desc: 'Initializes a cURL share handle'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'share_init'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: curl_share_close
+    desc: 'Closes a cURL share handle'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'share_close'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: curl_share_setopt
+    desc: 'Set an option for a cURL share handle'
+    span_attributes:
+      http.client: 'curl'
+      http.operation: 'share_setopt'
+    sensitive_params: []
+    sensitive_return: false

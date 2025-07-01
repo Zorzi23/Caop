@@ -2,6 +2,34 @@
 
 All notable changes of the PHPUnit 12.2 release series are documented in this file using the [Keep a CHANGELOG](https://keepachangelog.com/) principles.
 
+## [12.2.5] - 2025-06-27
+
+### Fixed
+
+* [#6249](https://github.com/sebastianbergmann/phpunit/issues/6249): No meaningful error when `<testsuite>` element is missing required `name` attribute
+
+## [12.2.4] - 2025-06-26
+
+### Changed
+
+* Including information about the Git repository (such as the commit hash and branch name) in the Open Test Reporting XML format is now an opt-in feature that can be enabled via the `--include-git-information` CLI option or the `includeGitInformation` attribute in the XML configuration file
+
+## [12.2.3] - 2025-06-20
+
+### Added
+
+* [#6236](https://github.com/sebastianbergmann/phpunit/issues/6236): `failOnPhpunitWarning` attribute on the `<phpunit>` element of the XML configuration file and `--fail-on-phpunit-warning` CLI option for controlling whether PHPUnit should fail on PHPUnit warnings (default: `true`)
+* [#6239](https://github.com/sebastianbergmann/phpunit/issues/6239): `--do-not-fail-on-deprecation`, `--do-not-fail-on-phpunit-warning`, `--do-not-fail-on-phpunit-deprecation`, `--do-not-fail-on-empty-test-suite`, `--do-not-fail-on-incomplete`, `--do-not-fail-on-notice`, `--do-not-fail-on-risky`, `--do-not-fail-on-skipped`, and `--do-not-fail-on-warning` CLI options
+* `--do-not-report-useless-tests` CLI option as a replacement for `--dont-report-useless-tests`
+
+### Deprecated
+
+* [#6240](https://github.com/sebastianbergmann/phpunit/issues/6240): `--dont-report-useless-tests` CLI option (use `--do-not-report-useless-tests` instead)
+
+### Fixed
+
+* [#6243](https://github.com/sebastianbergmann/phpunit/issues/6243): Constraints cannot be implemented without using internal class `ExpectationFailedException`
+
 ## [12.2.2] - 2025-06-13
 
 ### Fixed
@@ -60,6 +88,9 @@ This feature is experimental and the generated XML may change to enhance complia
 * A warning is now emitted when more than one of `#[Small]`, `#[Medium]`, or `#[Large]` is used on a test class
 * A warning is now emitted when a data provider provides data sets that have more values than the test method consumes using arguments
 
+[12.2.5]: https://github.com/sebastianbergmann/phpunit/compare/12.2.4...12.2.5
+[12.2.4]: https://github.com/sebastianbergmann/phpunit/compare/12.2.3...12.2.4
+[12.2.3]: https://github.com/sebastianbergmann/phpunit/compare/12.2.2...12.2.3
 [12.2.2]: https://github.com/sebastianbergmann/phpunit/compare/12.2.1...12.2.2
 [12.2.1]: https://github.com/sebastianbergmann/phpunit/compare/12.2.0...12.2.1
 [12.2.0]: https://github.com/sebastianbergmann/phpunit/compare/12.1.6...12.2.0

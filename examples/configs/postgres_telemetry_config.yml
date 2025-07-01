@@ -1,0 +1,547 @@
+# postgres_telemetry_config.yml
+version: 1.0
+name: 'Caop\Postgres'
+service_name: 'postgres-service'
+entities:
+  - name: pg_connect
+    desc: 'Establishes a non-persistent connection to a PostgreSQL database using a connection string.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'connect'
+      db.connection_string: 'parsed'
+    sensitive_params: [0]
+    sensitive_return: true
+  - name: pg_pconnect
+    desc: 'Establishes a persistent connection to a PostgreSQL database, reusing existing connections.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'persistent_connect'
+      db.connection_string: 'parsed'
+    sensitive_params: [0]
+    sensitive_return: true
+  - name: pg_connect_poll
+    desc: 'Checks the status of a non-blocking connection initiated by pg_connect.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'connect_poll'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_close
+    desc: 'Closes a PostgreSQL database connection.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'close'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_connection_status
+    desc: 'Returns the current connection status (e.g., active, inactive).'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'connection_status'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_connection_busy
+    desc: 'Checks if the connection is busy executing a query.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'connection_busy'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_connection_reset
+    desc: 'Resets the database connection, clearing previous states.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'connection_reset'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_host
+    desc: 'Returns the host name associated with the connection.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'get_host'
+    sensitive_params: []
+    sensitive_return: true
+  - name: pg_dbname
+    desc: 'Returns the database name associated with the connection.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'get_dbname'
+    sensitive_params: []
+    sensitive_return: true
+  - name: pg_port
+    desc: 'Returns the port number used by the connection.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'get_port'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_tty
+    desc: 'Returns the TTY name associated with the connection (obsolete).'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'get_tty'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_options
+    desc: 'Returns the connection options set for the current connection.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'get_options'
+    sensitive_params: []
+    sensitive_return: true
+  - name: pg_user
+    desc: 'Returns the username associated with the connection.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'get_user'
+    sensitive_params: []
+    sensitive_return: true
+  - name: pg_passwd
+    desc: 'Returns the password used in the connection (use with caution for security reasons).'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'get_password'
+    sensitive_params: []
+    sensitive_return: true
+  - name: pg_socket
+    desc: 'Returns the connection socket handle for low-level operations.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'get_socket'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: pg_query
+    desc: 'Executes an SQL query directly on the PostgreSQL database.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'query'
+      db.query: 'parsed'
+    # sensitive_params: [1]
+    sensitive_return: true
+  - name: pg_query_params
+    desc: 'Executes an SQL query with provided parameters, preventing SQL injection.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'query_params'
+      db.query: 'parsed'
+    sensitive_params: [1, 2]
+    sensitive_return: true
+  - name: pg_prepare
+    desc: 'Prepares a named query for later execution.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'prepare'
+      db.query: 'parsed'
+    sensitive_params: [1, 2]
+    sensitive_return: true
+  - name: pg_execute
+    desc: 'Executes a prepared query with the provided parameters.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'execute'
+      db.query: 'parsed'
+    sensitive_params: [1, 2]
+    sensitive_return: true
+  - name: pg_send_query
+    desc: 'Sends an asynchronous SQL query to the database.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'send_query'
+      db.query: 'parsed'
+    sensitive_params: [1]
+    sensitive_return: false
+  - name: pg_send_query_params
+    desc: 'Sends an asynchronous SQL query with provided parameters.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'send_query_params'
+      db.query: 'parsed'
+    sensitive_params: [1, 2]
+    sensitive_return: false
+  - name: pg_send_prepare
+    desc: 'Sends an asynchronous prepared query to the database.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'send_prepare'
+      db.query: 'parsed'
+    sensitive_params: [1, 2]
+    sensitive_return: false
+  - name: pg_send_execute
+    desc: 'Sends an asynchronous prepared query for execution with parameters.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'send_execute'
+      db.query: 'parsed'
+    sensitive_params: [1, 2]
+    sensitive_return: false
+  - name: pg_cancel_query
+    desc: 'Cancels an asynchronous query being executed on the database.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'cancel_query'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: pg_fetch_result
+    desc: 'Returns a specific value from a row and column in the query result.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'fetch_result'
+    sensitive_params: []
+    sensitive_return: true
+  - name: pg_fetch_row
+    desc: 'Returns a row from the result as a numerically indexed array.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'fetch_row'
+    sensitive_params: []
+    sensitive_return: true
+  - name: pg_fetch_assoc
+    desc: 'Returns a row from the result as an associative array.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'fetch_assoc'
+    sensitive_params: []
+    sensitive_return: true
+  - name: pg_fetch_array
+    desc: 'Returns a row from the result as both a numerically indexed and associative array.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'fetch_array'
+    sensitive_params: []
+    sensitive_return: true
+  - name: pg_fetch_object
+    desc: 'Returns a row from the result as an object with named properties.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'fetch_object'
+    sensitive_params: []
+    sensitive_return: true
+  - name: pg_fetch_all
+    desc: 'Returns all rows from the result as an array of arrays.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'fetch_all'
+    sensitive_params: []
+    sensitive_return: true
+  - name: pg_fetch_all_columns
+    desc: 'Returns all rows from a specific column in the result as an array.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'fetch_all_columns'
+    sensitive_params: []
+    sensitive_return: true
+  - name: pg_result_seek
+    desc: 'Moves the internal result cursor to a specific row.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'result_seek'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_result_status
+    desc: 'Returns the status of the query result (e.g., success, error).'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'result_status'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_result_error
+    desc: 'Returns the error message associated with the query result.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'result_error'
+    sensitive_params: []
+    sensitive_return: true
+  - name: pg_result_error_field
+    desc: 'Returns a specific field from the result error message.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'result_error_field'
+    sensitive_params: []
+    sensitive_return: true
+  - name: pg_num_rows
+    desc: 'Returns the number of rows in the query result.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'num_rows'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_num_fields
+    desc: 'Returns the number of fields (columns) in the query result.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'num_fields'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_field_name
+    desc: 'Returns the name of a specific field in the result.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'field_name'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_field_num
+    desc: 'Returns the numeric index of a field by its name.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'field_num'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_field_size
+    desc: 'Returns the size in bytes of a field in the result.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'field_size'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_field_type
+    desc: 'Returns the data type of a field in the result.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'field_type'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_field_type_oid
+    desc: 'Returns the type OID of a field in the result.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'field_type_oid'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_field_prtlen
+    desc: 'Returns the printed length of a field value in the result.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'field_prtlen'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_field_is_null
+    desc: 'Checks if a field value in the result is null.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'field_is_null'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_affected_rows
+    desc: 'Returns the number of rows affected by a query (INSERT, UPDATE, DELETE).'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'affected_rows'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_last_oid
+    desc: 'Returns the last OID (Object Identifier) inserted by an INSERT query.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'last_oid'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: pg_last_error
+    desc: 'Returns the last error message generated by the connection.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'last_error'
+    sensitive_params: []
+    sensitive_return: true
+  - name: pg_set_error_verbosity
+    desc: 'Sets the verbosity of error messages returned by the server.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'set_error_verbosity'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: pg_trace
+    desc: 'Enables connection activity tracing for debugging.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'trace'
+    sensitive_params: [0]
+    sensitive_return: false
+  - name: pg_untrace
+    desc: 'Disables connection activity tracing.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'untrace'
+    sensitive_params: []
+    sensitive_return: false
+
+  - name: pg_escape_string
+    desc: 'Escapes a string for safe use in SQL queries.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'escape_string'
+    sensitive_params: [0]
+    sensitive_return: true
+  - name: pg_escape_bytea
+    desc: 'Escapes binary data for PostgreSQL bytea type.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'escape_bytea'
+    sensitive_params: [0]
+    sensitive_return: true
+  - name: pg_unescape_bytea
+    desc: 'Converts escaped binary data from bytea type to original format.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'unescape_bytea'
+    sensitive_params: [0]
+    sensitive_return: true
+  - name: pg_escape_identifier
+    desc: 'Escapes an identifier (e.g., table or column name) for safe use in queries.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'escape_identifier'
+    sensitive_params: [0]
+    sensitive_return: true
+  - name: pg_escape_literal
+    desc: 'Escapes a literal for safe use in SQL queries.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'escape_literal'
+    sensitive_params: [0]
+    sensitive_return: true
+
+  - name: pg_lo_create
+    desc: 'Creates a new large object in the database.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'lo_create'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_lo_open
+    desc: 'Opens an existing large object for reading or writing.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'lo_open'
+    sensitive_params: []
+    sensitive_return: true
+  - name: pg_lo_read
+    desc: 'Reads data from a large object.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'lo_read'
+    sensitive_params: []
+    sensitive_return: true
+  - name: pg_lo_write
+    desc: 'Writes data to a large object.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'lo_write'
+    sensitive_params: [1]
+    sensitive_return: false
+  - name: pg_lo_seek
+    desc: 'Moves the internal cursor of a large object to a specific position.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'lo_seek'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_lo_tell
+    desc: 'Returns the current cursor position in a large object.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'lo_tell'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_lo_close
+    desc: 'Closes a large object.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'lo_close'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_lo_unlink
+    desc: 'Deletes a large object from the database.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'lo_unlink'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_lo_import
+    desc: 'Imports a file from the filesystem into a large object.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'lo_import'
+    sensitive_params: [1]
+    sensitive_return: false
+  - name: pg_lo_export
+    desc: 'Exports a large object to a file in the filesystem.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'lo_export'
+    sensitive_params: [2]
+    sensitive_return: false
+
+  - name: pg_client_encoding
+    desc: 'Returns the character encoding used by the client.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'client_encoding'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_set_client_encoding
+    desc: 'Sets the character encoding used by the client.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'set_client_encoding'
+    sensitive_params: [1]
+    sensitive_return: false
+  - name: pg_meta_data
+    desc: 'Returns metadata (e.g., column types) of a table in the database.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'meta_data'
+    sensitive_params: [1]
+    sensitive_return: true
+  - name: pg_version
+    desc: 'Returns the PostgreSQL server version.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'version'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_last_notice
+    desc: 'Returns the last NOTICE message sent by the server.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'last_notice'
+    sensitive_params: []
+    sensitive_return: true
+  - name: pg_put_line
+    desc: 'Sends a string directly to the PostgreSQL backend.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'put_line'
+    sensitive_params: [1]
+    sensitive_return: false
+  - name: pg_get_result
+    desc: 'Gets the result of an asynchronous query sent earlier.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'get_result'
+    sensitive_params: []
+    sensitive_return: true
+  - name: pg_result_memory_size
+    desc: 'Returns the memory size allocated for a query result.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'result_memory_size'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_set_chunked_rows_size
+    desc: 'Sets the maximum row size returned in chunked mode.'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'set_chunked_rows_size'
+    sensitive_params: []
+    sensitive_return: false
+  - name: pg_transaction_status
+    desc: 'Returns the current transaction status (e.g., active, idle).'
+    span_attributes:
+      db.system: 'postgresql'
+      db.operation: 'transaction_status'
+    sensitive_params: []
+    sensitive_return: false

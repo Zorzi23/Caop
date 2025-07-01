@@ -1,7 +1,0 @@
-version: 1.0
-name: 'Caop'
-entities:
-  functions:
-    - name: "handleGlobalsInfo"
-      children:
-        - name: curl_exec

@@ -1,0 +1,8 @@
+version: 1.0
+name: 'Caop'
+entities:
+  - class: "CaOp\\Template\\TelemetryTemplates"
+    method: "handleRequest"
+    span_name: 'RequestInfo 😎'
+    include: 
+      - file: "postgres_telemetry_config.yml"

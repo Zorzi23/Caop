@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  php-server:
+    build: .
+    container_name: php-otel-server
+    volumes:
+      - {your_project_path}/var/www/html
+      - ./conf/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini:ro
+      - ./conf/opentelemetry.ini:/usr/local/etc/php/conf.d/opentelemetry.ini:ro
+      - ./conf/pgsql.ini:/usr/local/etc/php/conf.d/pgsql.ini:ro
+    ports:
+      - "8080:8080"
+    command: "php -S 0.0.0.0:8080"
+    networks:
+      - php-op-network
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: testdb
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - php-op-network
+
+networks:
+  php-op-network:
+    driver: bridge

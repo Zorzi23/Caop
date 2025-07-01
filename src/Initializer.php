@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace CaOp;
 
+use PhpParser\Node\Expr\List_;
 use Symfony\Component\Yaml\Exception\ParseException;
 
 /**
@@ -36,6 +37,12 @@ function initializeTelemetry(string $sConfigPath): bool
     }
 }
 
-// Determine config path from environment variable or default to cwd/telemetry_config.yml
-$sConfigPath = $_ENV['TELEMETRY_CONFIG_PATH'] ?? getcwd() . '/telemetry_config.yml';
+$aConfigs = array_filter([
+    getenv('CAOP_TELEMETRY_CONFIG_PATH'),
+    $_ENV['CAOP_TELEMETRY_CONFIG_PATH'] ?? null,
+    getcwd() . '/telemetry_config.yml'
+]);
+
+list($sConfigPath) = array_values($aConfigs);
+
 initializeTelemetry($sConfigPath);
