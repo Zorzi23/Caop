@@ -320,19 +320,6 @@ final class HookConfiguration
     private function extractArgs(array $aArgs): mixed
     {
         return $aArgs[1] ?? [];
-        // return count($aArgs) === 2 && is_array($aArgs[1])
-        //     ? $aArgs[1]
-        //     : array_values($aArgs)[0] ?? [];
     }
 
-    /**
-     * Returns the original parameters to pass to the function/method.
-     *
-     * @param array<mixed> $aArgs The arguments passed to the function/method
-     * @return array<mixed> The original arguments
-     */
-    private function returnOriginalArgs(array $aArgs): array
-    {
-        return count($aArgs) === 2 && is_array($aArgs[1]) ? $aArgs[1] : $aArgs;
-    }
 }

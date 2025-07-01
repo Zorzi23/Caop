@@ -15,3 +15,13 @@ $xReturn = pg_fetch_object($xResult);
 print_r(
     $xReturn
 );
+
+$ch = curl_init('http://httpbin.org/get');
+
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+$xReturn = curl_exec($ch);
+
+print_r(
+    $xReturn
+);
