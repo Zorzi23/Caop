@@ -243,7 +243,7 @@ final class HookConfiguration
         }
 
         Context::storage()->attach($oSpan->storeInContext(Context::getCurrent()));
-        return $this->returnOriginalArgs($aArgs);
+        return $this->extractArgs($aArgs);
     }
 
     /**
