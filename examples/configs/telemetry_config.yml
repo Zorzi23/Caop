@@ -5,4 +5,5 @@ entities:
     method: "handleRequest"
     span_name: 'RequestInfo 😎'
     include: 
+      - file: "curl_telemetry_config.yml"
       - file: "postgres_telemetry_config.yml"

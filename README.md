@@ -1,14 +1,18 @@
-# PHP Auto Custom OpenTelemetry Library
+# 📡 PHP Auto Custom OpenTelemetry Library
 
-A PHP library for automatic telemetry using [OpenTelemetry](https://opentelemetry.io/), enabling function and method monitoring via YAML configuration with minimal code changes.
+A PHP library for **automatic telemetry using [OpenTelemetry](https://opentelemetry.io/)**, enabling function and method monitoring via YAML configuration with minimal code changes.
 
 ---
 
 ## 🎞️ Installation
 
+Install via Composer from [Packagist](https://packagist.org/packages/zorzi23/custom-auto-open-telemetry):
+
 ```bash
 composer require zorzi23/custom-auto-open-telemetry
 ```
+
+[View on Packagist »](https://packagist.org/packages/zorzi23/custom-auto-open-telemetry)
 
 ---
 
@@ -27,7 +31,7 @@ composer require zorzi23/custom-auto-open-telemetry
 
 ---
 
-## 📁 PHP Configuration (`php.ini`)
+## 🛠️ PHP Configuration (`php.ini`)
 
 ```ini
 [opentelemetry]
@@ -46,23 +50,28 @@ OTEL_PROPAGATORS=baggage,tracecontext
 
 ## 📅 YAML Configuration Example
 
+The library uses YAML files to declare which functions, methods, or classes should be instrumented. The structure supports nested `children` to define span hierarchies.
+
+Example main config (`telemetry_config.yml`):
+
 ```yaml
 version: 1.0
 name: 'Caop'
 entities:
-  functions:
-    - name: "handleGlobalsInfo"
-      children:
-        - name: curl_exec
-    - class: "MyApp\MyClass"
-      method: "myMethod"
+  - class: "CaOp\\Template\\TelemetryTemplates"
+    method: "handleRequest"
+    span_name: 'RequestInfo 😎'
+    include:
+      - file: "curl_telemetry_config.yml"
+      - file: "postgres_telemetry_config.yml"
 ```
 
-The structure supports nested `children` to define span hierarchies.
+* The included YAML files (e.g., `curl_telemetry_config.yml`, `postgres_telemetry_config.yml`) define detailed instrumentation rules for specific libraries or domains.
+* Each included file contains its own `entities` section specifying functions, span attributes, sensitive data masking, etc.
 
 ---
 
-## 🚀 Usage
+## 🚀 Usage Example
 
 ```php
 <?php
@@ -75,29 +84,29 @@ function handleGlobalsInfo() {
 
 handleGlobalsInfo();
 
-// Inicializa o cURL
+// Initialize cURL session
 $ch = curl_init();
 
-// URL de exemplo (API pública para teste)
+// Example URL (public API for testing)
 $url = "https://example.com.br";
 
-// Configura as opções do cURL
-curl_setopt($ch, CURLOPT_URL, $url);          // Define a URL
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Retorna a resposta como string
+// Set cURL options
+curl_setopt($ch, CURLOPT_URL, $url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-// Executa a requisição
+// Execute the request
 $response = curl_exec($ch);
 
-// Verifica se houve erro
+// Check for errors
 if (curl_errno($ch)) {
-    echo 'Erro cURL: ' . curl_error($ch);
+    echo 'cURL error: ' . curl_error($ch);
 } else {
-    // Decodifica a resposta JSON (se aplicável)
+    // Decode JSON response if applicable
     $data = json_decode($response, true);
-    print_r($data); // Exibe os dados
+    print_r($data);
 }
 
-// Fecha a sessão cURL
+// Close the cURL session
 curl_close($ch);
 ```
 
@@ -105,7 +114,7 @@ curl_close($ch);
 
 ## 🪠 Built-in Template Functions
 
-The library provides optional utility functions under `CaOp\Templates\TelemetryTemplates`:
+The library provides optional utility functions under the `CaOp\Templates\TelemetryTemplates` namespace:
 
 | Function          | Description                                     |
 | ----------------- | ----------------------------------------------- |
@@ -113,7 +122,7 @@ The library provides optional utility functions under `CaOp\Templates\TelemetryT
 | `handleRequest()` | Captures `$_SERVER`, `$_GET`, `$_POST`, headers |
 | `sessionInfo()`   | Captures `$_SESSION` if a session is active     |
 
-To use them, simply include the `TelemetryTemplates.php` file and reference their fully qualified names in your YAML config.
+To use them, include `TelemetryTemplates.php` and reference their fully qualified names in your YAML config.
 
 ---
 
@@ -123,7 +132,7 @@ To use them, simply include the `TelemetryTemplates.php` file and reference thei
 vendor/bin/phpunit
 ```
 
-All components are tested using PHPUnit. Example test coverage includes:
+Tests cover:
 
 * Span hierarchy based on entity structure
 * Attribute capture (e.g., `curl_init`)
@@ -134,8 +143,8 @@ All components are tested using PHPUnit. Example test coverage includes:
 ## 📋 Notes
 
 * Missing functions or methods are logged to the PHP error log.
-* The YAML-driven configuration allows easy extension of trace logic without modifying business code.
-* You can dynamically load YAML configs at runtime.
+* YAML-driven configuration allows easy extension of trace logic without modifying business code.
+* YAML configs can be dynamically loaded at runtime.
 
 ---
 
